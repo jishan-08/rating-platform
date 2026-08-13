@@ -5,8 +5,12 @@ const userRepository = require("../repositories/userRepository");
 
 const BCRYPT_SALT_ROUNDS = 12;
 
+async function hashPassword(password) {
+    return bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+}
+
 async function registerUser({ name, email, address, password }) {
-    const passwordHash = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+    const passwordHash = await hashPassword(password);
 
     return userRepository.createUser({
         name,
@@ -40,6 +44,7 @@ async function getCurrentUser(id) {
 }
 
 module.exports = {
+    hashPassword,
     registerUser,
     loginUser,
     getCurrentUser,
