@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS users (
   -- The database stores password hashes only; plaintext passwords have no column.
   CONSTRAINT uq_users_email UNIQUE (email),
   CONSTRAINT chk_users_name_length
-    CHECK (CHAR_LENGTH(TRIM(name)) BETWEEN 20 AND 60),
+    CHECK (CHAR_LENGTH(TRIM(name)) BETWEEN 2 AND 60),
   CONSTRAINT chk_users_email_not_blank
     CHECK (CHAR_LENGTH(TRIM(email)) > 0),
   CONSTRAINT chk_users_password_hash_not_blank

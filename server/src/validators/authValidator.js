@@ -13,8 +13,8 @@ function validateRegistration(input = {}) {
     const password = typeof input.password === "string" ? input.password : "";
     const errors = [];
 
-    if (name.length < 20 || name.length > 60) {
-        errors.push("Name must be between 20 and 60 characters");
+    if (name.length < 2 || name.length > 60) {
+        errors.push("Name must be between 2 and 60 characters");
     }
 
     if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {

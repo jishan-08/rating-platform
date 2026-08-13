@@ -14,7 +14,7 @@ Average ratings are deliberately not stored in `stores`. They are derived from t
 
 ## Constraints and delete behavior
 
-- User names are trimmed for validation and must contain 20-60 characters. User and store addresses are required and limited to 400 characters.
+- User names are trimmed for validation and must contain 2-60 characters. User and store addresses are required and limited to 400 characters.
 - The `users.role` check accepts only `ADMIN`, `USER`, and `STORE_OWNER`.
 - `ratings.rating` is constrained to integers from 1 through 5.
 - Passwords have a `password_hash` field only; plaintext passwords are never part of the schema.
