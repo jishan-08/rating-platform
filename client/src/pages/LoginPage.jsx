@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, Navigate } from "react-router-dom";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Input from "../components/Input";
@@ -21,9 +21,9 @@ function LoginPage() {
     const successMessage = location.state?.successMessage || "";
     const redirectPath = location.state?.from?.pathname || "/dashboard";
 
-    // If already logged in, redirect immediately
+    // If already logged in, redirect declaratively
     if (isAuthenticated) {
-        navigate(redirectPath, { replace: true });
+        return <Navigate to={redirectPath} replace />;
     }
 
     async function handleSubmit(event) {

@@ -75,4 +75,24 @@ export const authAPI = {
     }),
 };
 
+/**
+ * Store API endpoints
+ */
+export const storeAPI = {
+    getStores: (params = {}) => {
+        const query = new URLSearchParams();
+        if (params.search) query.set("search", params.search);
+        if (params.address) query.set("address", params.address);
+        if (params.page) query.set("page", params.page);
+        if (params.limit) query.set("limit", params.limit);
+        if (params.sortBy) query.set("sortBy", params.sortBy);
+        if (params.sortOrder) query.set("sortOrder", params.sortOrder);
+
+        const queryString = query.toString();
+        return request(`/stores${queryString ? `?${queryString}` : ""}`, {
+            method: "GET",
+        });
+    },
+};
+
 export default request;

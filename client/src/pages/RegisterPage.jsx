@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import Input from "../components/Input";
@@ -22,7 +22,7 @@ function RegisterPage() {
     const [fieldErrors, setFieldErrors] = useState([]);
 
     if (isAuthenticated) {
-        navigate("/dashboard", { replace: true });
+        return <Navigate to="/dashboard" replace />;
     }
 
     function handleChange(e) {

@@ -2,7 +2,13 @@ function StatusState({ type = "empty", title, children }) {
     return (
         <div className={`status-state status-state--${type}`} role={type === "error" ? "alert" : undefined}>
             <h2>{title}</h2>
-            {children && <p>{children}</p>}
+            {children && (
+                typeof children === "string" ? (
+                    <p>{children}</p>
+                ) : (
+                    <div className="status-state-content">{children}</div>
+                )
+            )}
         </div>
     );
 }
@@ -18,3 +24,5 @@ export function EmptyState({ title = "Nothing here yet", children }) {
 export function ErrorMessage({ children }) {
     return <StatusState type="error" title="Something needs attention">{children}</StatusState>;
 }
+
+export default StatusState;
