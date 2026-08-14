@@ -6,6 +6,7 @@
 const express = require("express");
 const storeController = require("../controllers/storeController");
 const authenticate = require("../middleware/authenticate");
+const requireRole = require("../middleware/requireRole");
 
 const router = express.Router();
 
@@ -13,5 +14,6 @@ const router = express.Router();
 router.use(authenticate);
 
 router.get("/", storeController.listStores);
+router.post("/:storeId/rating", requireRole("USER"), storeController.submitRating);
 
 module.exports = router;

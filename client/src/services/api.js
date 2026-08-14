@@ -93,6 +93,20 @@ export const storeAPI = {
             method: "GET",
         });
     },
+
+    submitRating: (storeId, rating) => request(`/stores/${storeId}/rating`, {
+        method: "POST",
+        body: { rating },
+    }),
+};
+
+/**
+ * User API endpoints
+ */
+export const userAPI = {
+    getMyRatings: () => request("/users/me/ratings", {
+        method: "GET",
+    }),
 };
 
 export default request;

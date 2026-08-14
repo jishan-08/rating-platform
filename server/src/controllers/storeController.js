@@ -4,7 +4,7 @@
  */
 
 const storeService = require("../services/storeService");
-const { validateStoreListQuery } = require("../validators/storeValidator");
+const { validateStoreListQuery, validateRatingInput } = require("../validators/storeValidator");
 
 function sendValidationError(res, errors) {
     return res.status(400).json({
@@ -45,6 +45,43 @@ async function listStores(req, res) {
     }
 }
 
+async function submitRating(req, res) {
+    const { errors, value } = validateRatingInput({
+        storeId: req.params.storeId,
+        rating: req.body?.rating,
+    });
+
+    if (errors.length > 0) {
+        return sendValidationError(res, errors);
+    }
+
+    try {
+        const userId = req.user.id;
+        const ratingSummary = await storeService.rateStore(userId, value.storeId, value.rating);
+
+        return res.status(200).json({
+            success: true,
+            message: "Rating saved successfully",
+            data: ratingSummary,
+        });
+    } catch (error) {
+        if (error.status === 404) {
+            return res.status(404).json({
+                success: false,
+                message: error.message || "Store not found",
+            });
+        }
+
+        console.error("Store rating submission failed:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Unable to submit rating",
+        });
+    }
+}
+
 module.exports = {
     listStores,
+    submitRating,
 };

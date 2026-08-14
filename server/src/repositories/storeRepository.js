@@ -91,6 +91,59 @@ async function listStoresWithRatings(userId, filters) {
     };
 }
 
+async function findStoreById(storeId) {
+    const [rows] = await pool.execute(
+        `SELECT id, name, email, address, owner_id, created_at, updated_at
+         FROM stores
+         WHERE id = ?
+         LIMIT 1`,
+        [Number(storeId)]
+    );
+
+    return rows[0] || null;
+}
+
+async function upsertRating(userId, storeId, rating) {
+    await pool.execute(
+        `INSERT INTO ratings (user_id, store_id, rating)
+         VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+             rating = VALUES(rating),
+             updated_at = CURRENT_TIMESTAMP`,
+        [Number(userId), Number(storeId), Number(rating)]
+    );
+}
+
+async function getStoreRatingSummary(userId, storeId) {
+    const [rows] = await pool.query(
+        `SELECT
+            s.id,
+            COALESCE(ROUND(AVG(r.rating), 2), 0) AS average_rating,
+            COUNT(r.id) AS total_ratings,
+            my_r.rating AS my_rating
+         FROM stores s
+         LEFT JOIN ratings r ON r.store_id = s.id
+         LEFT JOIN ratings my_r ON my_r.store_id = s.id AND my_r.user_id = ?
+         WHERE s.id = ?
+         GROUP BY s.id, my_r.rating`,
+        [Number(userId), Number(storeId)]
+    );
+
+    if (rows.length === 0) {
+        return null;
+    }
+
+    return {
+        storeId: Number(rows[0].id),
+        averageRating: Number(parseFloat(rows[0].average_rating).toFixed(2)),
+        totalRatings: Number(rows[0].total_ratings),
+        myRating: rows[0].my_rating !== null ? Number(rows[0].my_rating) : null,
+    };
+}
+
 module.exports = {
     listStoresWithRatings,
+    findStoreById,
+    upsertRating,
+    getStoreRatingSummary,
 };

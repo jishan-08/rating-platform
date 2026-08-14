@@ -1,9 +1,10 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
 function Sidebar({ open, onNavigate }) {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleLogout = () => {
         logout();
@@ -28,6 +29,20 @@ function Sidebar({ open, onNavigate }) {
 
     const items = getNavItems();
 
+    const isItemActive = (itemTo) => {
+        if (itemTo === "/dashboard") {
+            return location.pathname === "/dashboard" && (!location.hash || location.hash === "#browse");
+        }
+        if (itemTo.includes("#")) {
+            const itemHash = itemTo.substring(itemTo.indexOf("#"));
+            if (itemHash === "#browse") {
+                return location.pathname === "/dashboard" && (!location.hash || location.hash === "#browse");
+            }
+            return location.pathname === "/dashboard" && location.hash === itemHash;
+        }
+        return location.pathname === itemTo;
+    };
+
     return (
         <aside className={`sidebar ${open ? "sidebar--open" : ""}`} aria-label="Dashboard navigation">
             <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "space-between" }}>
@@ -35,7 +50,12 @@ function Sidebar({ open, onNavigate }) {
                     <p className="sidebar-label">Workspace</p>
                     <nav>
                         {items.map((item) => (
-                            <NavLink key={item.label} to={item.to} end={item.to === "/dashboard"} onClick={onNavigate}>
+                            <NavLink
+                                key={item.label}
+                                to={item.to}
+                                className={isItemActive(item.to) ? "active" : ""}
+                                onClick={onNavigate}
+                            >
                                 {item.label}
                             </NavLink>
                         ))}

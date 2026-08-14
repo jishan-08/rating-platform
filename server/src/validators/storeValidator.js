@@ -69,6 +69,33 @@ function validateStoreListQuery(query = {}) {
     };
 }
 
+function validateRatingInput({ storeId, rating }) {
+    const errors = [];
+
+    const parsedStoreId = Number(storeId);
+    if (!Number.isSafeInteger(parsedStoreId) || parsedStoreId < 1) {
+        errors.push("storeId must be a positive integer");
+    }
+
+    if (rating === undefined || rating === null || rating === "") {
+        errors.push("Rating is required");
+    } else {
+        const parsedRating = Number(rating);
+        if (!Number.isInteger(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+            errors.push("Rating must be an integer between 1 and 5");
+        }
+    }
+
+    return {
+        errors,
+        value: {
+            storeId: parsedStoreId,
+            rating: Number(rating),
+        },
+    };
+}
+
 module.exports = {
     validateStoreListQuery,
+    validateRatingInput,
 };
