@@ -36,10 +36,11 @@ async function request(endpoint, options = {}) {
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-            // Backend returns { success: false, message: "...", errors: [...] }
+            // Backend returns { success: false, message: "...", errors: [...], fieldErrors: {...} }
             const error = new Error(data.message || "An unexpected error occurred");
             error.status = response.status;
             error.errors = data.errors || [];
+            error.fieldErrors = data.fieldErrors || {};
             throw error;
         }
 
@@ -67,7 +68,12 @@ export const authAPI = {
 
     login: (credentials) => request("/auth/login", {
         method: "POST",
-        body: credentials,
+        body: { portal: "standard", ...credentials },
+    }),
+
+    adminLogin: (credentials) => request("/auth/login", {
+        method: "POST",
+        body: { portal: "admin", ...credentials },
     }),
 
     getMe: () => request("/auth/me", {
@@ -106,6 +112,53 @@ export const storeAPI = {
 export const userAPI = {
     getMyRatings: () => request("/users/me/ratings", {
         method: "GET",
+    }),
+};
+
+/**
+ * Admin API endpoints
+ */
+export const adminAPI = {
+    getDashboard: () => request("/admin/dashboard", {
+        method: "GET",
+    }),
+
+    getUsers: (params = {}) => {
+        const query = new URLSearchParams();
+        if (params.name) query.set("name", params.name);
+        if (params.email) query.set("email", params.email);
+        if (params.address) query.set("address", params.address);
+        if (params.role) query.set("role", params.role);
+        if (params.page) query.set("page", params.page);
+        if (params.limit) query.set("limit", params.limit);
+        if (params.sortBy) query.set("sortBy", params.sortBy);
+        if (params.sortOrder) query.set("sortOrder", params.sortOrder);
+
+        const queryString = query.toString();
+        return request(`/admin/users${queryString ? `?${queryString}` : ""}`, {
+            method: "GET",
+        });
+    },
+
+    getStores: (params = {}) => {
+        const query = new URLSearchParams();
+        if (params.name) query.set("name", params.name);
+        if (params.email) query.set("email", params.email);
+        if (params.address) query.set("address", params.address);
+        if (params.page) query.set("page", params.page);
+        if (params.limit) query.set("limit", params.limit);
+        if (params.sortBy) query.set("sortBy", params.sortBy);
+        if (params.sortOrder) query.set("sortOrder", params.sortOrder);
+
+        const queryString = query.toString();
+        return request(`/admin/stores${queryString ? `?${queryString}` : ""}`, {
+            method: "GET",
+        });
+    },
+
+    createStore: (data) => request("/admin/stores", {
+        method: "POST",
+        body: data,
     }),
 };
 

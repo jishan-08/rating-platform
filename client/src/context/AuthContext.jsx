@@ -41,10 +41,23 @@ export function AuthProvider({ children }) {
     }, [loadUser]);
 
     /**
-     * User Login: sends credentials to backend, stores JWT in localStorage, and updates state.
+     * User Login: sends credentials to backend for standard login.
      */
     const login = async (credentials) => {
         const data = await authAPI.login(credentials);
+        if (data.token && data.user) {
+            localStorage.setItem("token", data.token);
+            setToken(data.token);
+            setUser(data.user);
+        }
+        return data;
+    };
+
+    /**
+     * Admin Login: sends credentials to backend for admin portal login.
+     */
+    const adminLogin = async (credentials) => {
+        const data = await authAPI.adminLogin(credentials);
         if (data.token && data.user) {
             localStorage.setItem("token", data.token);
             setToken(data.token);
@@ -75,6 +88,7 @@ export function AuthProvider({ children }) {
         isLoading,
         isAuthenticated: Boolean(user && token),
         login,
+        adminLogin,
         register,
         logout,
         refreshUser: loadUser,

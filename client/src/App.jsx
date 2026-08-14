@@ -6,7 +6,9 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import AdminLoginPage from "./pages/AdminLoginPage";
 import DashboardShellPage from "./pages/DashboardShellPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 
 function App() {
     return (
@@ -17,18 +19,31 @@ function App() {
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/admin/login" element={<AdminLoginPage />} />
                 </Route>
 
-                {/* Protected dashboard workspace routes */}
+                {/* Protected customer/store-owner dashboard workspace routes */}
                 <Route
                     path="/dashboard"
                     element={
-                        <ProtectedRoute>
+                        <ProtectedRoute allowedRoles={["USER", "STORE_OWNER"]}>
                             <DashboardLayout />
                         </ProtectedRoute>
                     }
                 >
                     <Route index element={<DashboardShellPage />} />
+                </Route>
+
+                {/* Protected administrator dashboard workspace routes */}
+                <Route
+                    path="/admin"
+                    element={
+                        <ProtectedRoute allowedRoles={["ADMIN"]}>
+                            <DashboardLayout />
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route index element={<AdminDashboardPage />} />
                 </Route>
             </Routes>
         </AuthProvider>

@@ -3,15 +3,17 @@ const {
     validateAdminUser,
     validateStoreOwner,
     validateStore,
+    validateCreateStoreWithOwner,
     validateUserListQuery,
     validateStoreListQuery,
 } = require("../validators/adminValidator");
 
-function sendValidationError(res, errors) {
+function sendValidationError(res, errors, fieldErrors = {}) {
     return res.status(400).json({
         success: false,
         message: "Validation failed",
         errors,
+        fieldErrors,
     });
 }
 
@@ -31,9 +33,13 @@ function sendPagination(res, data, total, page, limit, key) {
 async function dashboard(req, res) {
     try {
         const statistics = await adminService.getDashboard();
-        return res.status(200).json({ success: true, statistics });
+        return res.status(200).json({
+            success: true,
+            data: statistics,
+            statistics,
+        });
     } catch (error) {
-        console.error("Admin dashboard query failed");
+        console.error("Admin dashboard query failed:", error);
         return res.status(500).json({ success: false, message: "Unable to retrieve dashboard statistics" });
     }
 }
@@ -71,6 +77,34 @@ async function createStoreOwner(req, res) {
 }
 
 async function createStore(req, res) {
+    // If request includes owner credentials (the standard single-form store + owner creation workflow)
+    if (req.body.ownerName || req.body.owner_name || req.body.ownerEmail || req.body.owner_email || req.body.ownerPassword || req.body.owner_password) {
+        const { errors, fieldErrors, value } = validateCreateStoreWithOwner(req.body);
+        if (errors.length) return sendValidationError(res, errors, fieldErrors);
+
+        try {
+            const store = await adminService.createStoreWithOwner(value);
+            return res.status(201).json({
+                success: true,
+                message: "Store created successfully. Store owner account has been created and linked to the store.",
+                store,
+            });
+        } catch (error) {
+            if (error.code === "ER_DUP_ENTRY") {
+                return res.status(409).json({
+                    success: false,
+                    message: error.message || "An account with this email is already registered",
+                    fieldErrors: {
+                        ownerEmail: "An account with this email is already registered",
+                    },
+                });
+            }
+            console.error("Store with owner creation failed:", error);
+            return res.status(500).json({ success: false, message: "Unable to create store and owner account" });
+        }
+    }
+
+    // Fallback: create store with existing owner_id
     const { errors, value } = validateStore(req.body);
     if (errors.length) return sendValidationError(res, errors);
 
@@ -84,7 +118,7 @@ async function createStore(req, res) {
         if (error.code === "INVALID_STORE_OWNER") {
             return res.status(400).json({ success: false, message: "owner_id must belong to a STORE_OWNER" });
         }
-        console.error("Store creation failed");
+        console.error("Store creation failed:", error);
         return res.status(500).json({ success: false, message: "Unable to create store" });
     }
 }

@@ -25,14 +25,13 @@ function ProtectedRoute({ allowedRoles, children }) {
     }
 
     if (allowedRoles && !allowedRoles.includes(user?.role)) {
-        return (
-            <div className="page-container" style={{ padding: "4rem 0" }}>
-                <div className="status-state status-state--error">
-                    <h2>Access Denied</h2>
-                    <p>You do not have permission to view this section.</p>
-                </div>
-            </div>
-        );
+        if (user?.role === "ADMIN") {
+            return <Navigate to="/admin" replace />;
+        }
+        if (user?.role === "STORE_OWNER") {
+            return <Navigate to="/dashboard#store-owner" replace />;
+        }
+        return <Navigate to="/dashboard" replace />;
     }
 
     return children ? children : <Outlet />;

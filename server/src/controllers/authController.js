@@ -51,20 +51,20 @@ async function login(req, res) {
     try {
         const result = await authService.loginUser(value);
 
-        if (!result) {
-            return res.status(401).json({
-                success: false,
-                message: "Invalid email or password",
-            });
-        }
-
         return res.status(200).json({
             success: true,
             message: "Login successful",
             ...result,
         });
     } catch (error) {
-        console.error("User login failed");
+        if (error.status === 401 || error.status === 403) {
+            return res.status(error.status).json({
+                success: false,
+                message: error.message,
+            });
+        }
+
+        console.error("User login failed:", error);
 
         return res.status(500).json({
             success: false,

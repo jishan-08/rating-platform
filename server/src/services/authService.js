@@ -21,11 +21,29 @@ async function registerUser({ name, email, address, password }) {
     });
 }
 
-async function loginUser({ email, password }) {
+async function loginUser({ email, password, portal }) {
     const user = await userRepository.findUserByEmailWithPassword(email);
 
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-        return null;
+        const error = new Error("Invalid email or password");
+        error.status = 401;
+        throw error;
+    }
+
+    // Role-based portal enforcement
+    if (portal === "admin") {
+        if (user.role !== "ADMIN") {
+            const error = new Error("Only administrators can access the Admin Portal.");
+            error.status = 403;
+            throw error;
+        }
+    } else {
+        // Standard login: only CUSTOMER (USER) and STORE_OWNER are permitted
+        if (user.role === "ADMIN") {
+            const error = new Error("Administrators must use the Admin Portal to sign in.");
+            error.status = 403;
+            throw error;
+        }
     }
 
     const token = jwt.sign(

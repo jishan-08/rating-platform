@@ -24,6 +24,18 @@ async function findUserByEmailWithPassword(email) {
     return rows[0] || null;
 }
 
+async function findUserByEmail(email) {
+    const [rows] = await pool.execute(
+        `SELECT ${SAFE_USER_COLUMNS}
+         FROM users
+         WHERE email = ?
+         LIMIT 1`,
+        [email]
+    );
+
+    return rows[0] || null;
+}
+
 async function findUserById(id) {
     const [rows] = await pool.execute(
         `SELECT ${SAFE_USER_COLUMNS}
@@ -70,6 +82,7 @@ async function findRatingsByUserId(userId) {
 
 module.exports = {
     createUser,
+    findUserByEmail,
     findUserByEmailWithPassword,
     findUserById,
     findRatingsByUserId,

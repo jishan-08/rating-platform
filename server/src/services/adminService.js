@@ -36,6 +36,22 @@ async function createStore(store) {
     return adminRepository.createStore(store);
 }
 
+async function createStoreWithOwner(data) {
+    const existing = await userRepository.findUserByEmail(data.ownerEmail);
+    if (existing) {
+        const error = new Error("An account with this store owner email is already registered");
+        error.code = "ER_DUP_ENTRY";
+        throw error;
+    }
+
+    const passwordHash = await authService.hashPassword(data.ownerPassword);
+
+    return adminRepository.createStoreWithOwner({
+        ...data,
+        passwordHash,
+    });
+}
+
 async function getDashboard() {
     return adminRepository.getDashboardStatistics();
 }
@@ -52,6 +68,7 @@ module.exports = {
     createManagedUser,
     createStoreOwner,
     createStore,
+    createStoreWithOwner,
     getDashboard,
     getUsers,
     getStores,

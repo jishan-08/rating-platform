@@ -85,13 +85,13 @@ async function getDashboardStatistics() {
     ]);
 
     return {
-        totalUsers: userCounts[0].total_users,
-        totalStores: storeCounts[0].total_stores,
-        totalRatings: ratingCounts[0].total_ratings,
+        totalUsers: Number(userCounts[0]?.total_users) || 0,
+        totalStores: Number(storeCounts[0]?.total_stores) || 0,
+        totalRatings: Number(ratingCounts[0]?.total_ratings) || 0,
         roles: {
-            admins: userCounts[0].total_admins,
-            users: userCounts[0].total_normal_users,
-            storeOwners: userCounts[0].total_store_owners,
+            admins: Number(userCounts[0]?.total_admins) || 0,
+            users: Number(userCounts[0]?.total_normal_users) || 0,
+            storeOwners: Number(userCounts[0]?.total_store_owners) || 0,
         },
     };
 }
@@ -126,11 +126,44 @@ async function createStore({ name, email, address, ownerId }) {
     return findStoreById(result.insertId);
 }
 
+async function createStoreWithOwner({ name, email, address, ownerName, ownerEmail, ownerAddress, passwordHash }) {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // 1. Create the store owner user
+        const [userResult] = await connection.execute(
+            `INSERT INTO users (name, email, address, password_hash, role)
+             VALUES (?, ?, ?, ?, 'STORE_OWNER')`,
+            [ownerName, ownerEmail, ownerAddress || address, passwordHash]
+        );
+        const ownerId = userResult.insertId;
+
+        // 2. Create the store linked to the owner
+        const [storeResult] = await connection.execute(
+            `INSERT INTO stores (name, email, address, owner_id)
+             VALUES (?, ?, ?, ?)`,
+            [name, email, address, ownerId]
+        );
+        const storeId = storeResult.insertId;
+
+        await connection.commit();
+
+        return findStoreById(storeId);
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+}
+
 async function findStoreById(id) {
     const [rows] = await pool.query(
         `SELECT s.id, s.name, s.email, s.address, s.owner_id, s.created_at, s.updated_at,
                 owner.name AS owner_name, owner.email AS owner_email,
-                AVG(r.rating) AS average_rating
+                ROUND(AVG(r.rating), 1) AS average_rating,
+                COUNT(r.id) AS total_ratings
          FROM stores s
          INNER JOIN users owner ON owner.id = s.owner_id
          LEFT JOIN ratings r ON r.store_id = s.id
@@ -145,8 +178,8 @@ async function findStoreById(id) {
 
 async function listStores(filters) {
     const { whereClause, values } = buildStoreFilters(filters);
-    const sortColumn = STORE_SORT_COLUMNS[filters.sortBy];
-    const sortOrder = filters.sortOrder.toUpperCase();
+    const sortColumn = STORE_SORT_COLUMNS[filters.sortBy] || "s.created_at";
+    const sortOrder = filters.sortOrder.toUpperCase() === "ASC" ? "ASC" : "DESC";
     const [[countResult]] = await pool.execute(
         `SELECT COUNT(*) AS total
          FROM stores s
@@ -156,7 +189,8 @@ async function listStores(filters) {
     const [rows] = await pool.query(
         `SELECT s.id, s.name, s.email, s.address, s.owner_id, s.created_at, s.updated_at,
                 owner.name AS owner_name, owner.email AS owner_email,
-                AVG(r.rating) AS average_rating
+                ROUND(AVG(r.rating), 1) AS average_rating,
+                COUNT(r.id) AS total_ratings
          FROM stores s
          INNER JOIN users owner ON owner.id = s.owner_id
          LEFT JOIN ratings r ON r.store_id = s.id
@@ -175,5 +209,7 @@ module.exports = {
     getDashboardStatistics,
     listUsers,
     createStore,
+    createStoreWithOwner,
+    findStoreById,
     listStores,
 };

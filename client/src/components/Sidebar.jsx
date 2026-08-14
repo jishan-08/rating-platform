@@ -13,32 +13,41 @@ function Sidebar({ open, onNavigate }) {
 
     // Role-specific navigation items
     const getNavItems = () => {
-        const baseItems = [{ label: "Overview", to: "/dashboard" }];
-
         if (user?.role === "ADMIN") {
-            baseItems.push({ label: "Admin Panel", to: "/dashboard#admin" });
-        } else if (user?.role === "STORE_OWNER") {
-            baseItems.push({ label: "My Stores", to: "/dashboard#store-owner" });
-        } else {
-            baseItems.push({ label: "Browse Stores", to: "/dashboard#browse" });
-            baseItems.push({ label: "My Ratings", to: "/dashboard#my-ratings" });
+            return [
+                { label: "Dashboard", to: "/admin" },
+                { label: "Users", to: "/admin#users" },
+                { label: "Stores", to: "/admin#stores" },
+            ];
         }
 
-        return baseItems;
+        if (user?.role === "STORE_OWNER") {
+            return [
+                { label: "Overview", to: "/dashboard" },
+                { label: "My Stores", to: "/dashboard#store-owner" },
+            ];
+        }
+
+        return [
+            { label: "Overview", to: "/dashboard" },
+            { label: "Browse Stores", to: "/dashboard#browse" },
+            { label: "My Ratings", to: "/dashboard#my-ratings" },
+        ];
     };
 
     const items = getNavItems();
 
     const isItemActive = (itemTo) => {
+        if (itemTo === "/admin") {
+            return location.pathname === "/admin" && (!location.hash || location.hash === "#dashboard");
+        }
         if (itemTo === "/dashboard") {
-            return location.pathname === "/dashboard" && (!location.hash || location.hash === "#browse");
+            return location.pathname === "/dashboard" && (!location.hash || location.hash === "#overview");
         }
         if (itemTo.includes("#")) {
-            const itemHash = itemTo.substring(itemTo.indexOf("#"));
-            if (itemHash === "#browse") {
-                return location.pathname === "/dashboard" && (!location.hash || location.hash === "#browse");
-            }
-            return location.pathname === "/dashboard" && location.hash === itemHash;
+            const [itemPath, itemHash] = itemTo.split("#");
+            const expectedHash = `#${itemHash}`;
+            return location.pathname === itemPath && location.hash === expectedHash;
         }
         return location.pathname === itemTo;
     };

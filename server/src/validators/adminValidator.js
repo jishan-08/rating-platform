@@ -133,10 +133,113 @@ function validateStoreListQuery(query) {
     return validateListQuery(query, STORE_SORT_COLUMNS, false);
 }
 
+function validateCreateStoreWithOwner(input = {}) {
+    const name = getText(input.name);
+    const email = getText(input.email).toLowerCase();
+    const address = getText(input.address);
+
+    const ownerName = getText(input.ownerName || input.owner_name);
+    const ownerEmail = getText(input.ownerEmail || input.owner_email).toLowerCase();
+    const ownerPassword = typeof (input.ownerPassword || input.owner_password) === "string" ? (input.ownerPassword || input.owner_password) : "";
+    const ownerAddress = getText(input.ownerAddress || input.owner_address) || address;
+
+    const errors = [];
+    const fieldErrors = {};
+
+    // Store validations
+    if (!name) {
+        const msg = "Store name is required.";
+        errors.push(msg);
+        fieldErrors.storeName = msg;
+        fieldErrors.name = msg;
+    } else if (name.length > 255) {
+        const msg = "Store name must be between 1 and 255 characters.";
+        errors.push(msg);
+        fieldErrors.storeName = msg;
+        fieldErrors.name = msg;
+    }
+
+    if (!email) {
+        const msg = "Please enter a valid email address.";
+        errors.push(msg);
+        fieldErrors.storeEmail = msg;
+        fieldErrors.email = msg;
+    } else if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        const msg = "Please enter a valid email address.";
+        errors.push(msg);
+        fieldErrors.storeEmail = msg;
+        fieldErrors.email = msg;
+    }
+
+    if (!address) {
+        const msg = "Store address is required.";
+        errors.push(msg);
+        fieldErrors.storeAddress = msg;
+        fieldErrors.address = msg;
+    } else if (address.length > 400) {
+        const msg = "Store address must be between 1 and 400 characters.";
+        errors.push(msg);
+        fieldErrors.storeAddress = msg;
+        fieldErrors.address = msg;
+    }
+
+    // Store Owner validations
+    if (!ownerName) {
+        const msg = "Owner full name is required.";
+        errors.push(msg);
+        fieldErrors.ownerName = msg;
+        fieldErrors.owner_name = msg;
+    } else if (ownerName.length < 2 || ownerName.length > 60) {
+        const msg = "Owner full name must be between 2 and 60 characters.";
+        errors.push(msg);
+        fieldErrors.ownerName = msg;
+        fieldErrors.owner_name = msg;
+    }
+
+    if (!ownerEmail) {
+        const msg = "Please enter a valid email address.";
+        errors.push(msg);
+        fieldErrors.ownerEmail = msg;
+        fieldErrors.owner_email = msg;
+    } else if (ownerEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(ownerEmail)) {
+        const msg = "Please enter a valid email address.";
+        errors.push(msg);
+        fieldErrors.ownerEmail = msg;
+        fieldErrors.owner_email = msg;
+    }
+
+    if (!ownerPassword) {
+        const msg = "Password must be at least 8 characters.";
+        errors.push(msg);
+        fieldErrors.ownerPassword = msg;
+        fieldErrors.owner_password = msg;
+    } else if (ownerPassword.length < 8 || Buffer.byteLength(ownerPassword, "utf8") > 72) {
+        const msg = "Password must be at least 8 characters.";
+        errors.push(msg);
+        fieldErrors.ownerPassword = msg;
+        fieldErrors.owner_password = msg;
+    }
+
+    return {
+        errors,
+        fieldErrors,
+        value: {
+            name,
+            email,
+            address,
+            ownerName,
+            ownerEmail,
+            ownerPassword,
+            ownerAddress,
+        },
+    };
+}
+
 module.exports = {
     validateAdminUser,
     validateStoreOwner,
     validateStore,
+    validateCreateStoreWithOwner,
     validateUserListQuery,
     validateStoreListQuery,
 };

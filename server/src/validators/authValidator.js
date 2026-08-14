@@ -38,6 +38,7 @@ function validateRegistration(input = {}) {
 function validateLogin(input = {}) {
     const email = normalizeEmail(input.email);
     const password = typeof input.password === "string" ? input.password : "";
+    const portal = typeof input.portal === "string" ? input.portal.trim().toLowerCase() : "";
     const errors = [];
 
     if (!email || !password) {
@@ -46,7 +47,7 @@ function validateLogin(input = {}) {
 
     return {
         errors,
-        value: { email, password },
+        value: { email, password, portal },
     };
 }
 
