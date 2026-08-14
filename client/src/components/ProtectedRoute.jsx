@@ -28,9 +28,6 @@ function ProtectedRoute({ allowedRoles, children }) {
         if (user?.role === "ADMIN") {
             return <Navigate to="/admin" replace />;
         }
-        if (user?.role === "STORE_OWNER") {
-            return <Navigate to="/dashboard#store-owner" replace />;
-        }
         return <Navigate to="/dashboard" replace />;
     }
 

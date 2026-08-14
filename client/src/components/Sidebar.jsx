@@ -23,8 +23,9 @@ function Sidebar({ open, onNavigate }) {
 
         if (user?.role === "STORE_OWNER") {
             return [
-                { label: "Overview", to: "/dashboard" },
-                { label: "My Stores", to: "/dashboard#store-owner" },
+                { label: "Dashboard", to: "/dashboard" },
+                { label: "My Store", to: "/dashboard#my-store" },
+                { label: "Ratings", to: "/dashboard#ratings" },
             ];
         }
 
@@ -42,7 +43,10 @@ function Sidebar({ open, onNavigate }) {
             return location.pathname === "/admin" && (!location.hash || location.hash === "#dashboard");
         }
         if (itemTo === "/dashboard") {
-            return location.pathname === "/dashboard" && (!location.hash || location.hash === "#overview");
+            if (user?.role === "STORE_OWNER") {
+                return location.pathname === "/dashboard" && (!location.hash || location.hash === "#dashboard");
+            }
+            return location.pathname === "/dashboard" && (!location.hash || location.hash === "#overview" || location.hash === "#browse");
         }
         if (itemTo.includes("#")) {
             const [itemPath, itemHash] = itemTo.split("#");

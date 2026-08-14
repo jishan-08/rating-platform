@@ -26,10 +26,7 @@ function LoginPage() {
         if (user?.role === "ADMIN") {
             return <Navigate to="/admin" replace />;
         }
-        if (user?.role === "STORE_OWNER") {
-            return <Navigate to="/dashboard#store-owner" replace />;
-        }
-        return <Navigate to={redirectPath} replace />;
+        return <Navigate to="/dashboard" replace />;
     }
 
     async function handleSubmit(event) {
@@ -47,11 +44,7 @@ function LoginPage() {
 
         try {
             const data = await login({ email: email.trim(), password });
-            if (data.user?.role === "STORE_OWNER") {
-                navigate("/dashboard#store-owner", { replace: true });
-            } else {
-                navigate("/dashboard", { replace: true });
-            }
+            navigate("/dashboard", { replace: true });
         } catch (err) {
             setErrorMessage(err.message || "Failed to log in. Please check your credentials.");
             if (Array.isArray(err.errors)) {

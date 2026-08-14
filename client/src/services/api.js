@@ -162,4 +162,21 @@ export const adminAPI = {
     }),
 };
 
+/**
+ * Store Owner API endpoints
+ */
+export const ownerAPI = {
+    getDashboard: () => request("/owner/dashboard", {
+        method: "GET",
+    }),
+
+    getMyStore: () => request("/owner/store", {
+        method: "GET",
+    }),
+
+    getRatings: () => request("/owner/ratings", {
+        method: "GET",
+    }),
+};
+
 export default request;
