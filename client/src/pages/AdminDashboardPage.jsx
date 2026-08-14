@@ -17,10 +17,10 @@ function AdminDashboardPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [errorMessage, setErrorMessage] = useState("");
 
-    // Determine current view from URL hash: '#users', '#stores', or default (overview)
-    const currentHash = location.hash || "#dashboard";
-    const isUsersView = currentHash === "#users";
-    const isStoresView = currentHash === "#stores";
+    // Determine current view from URL hash or pathname
+    const currentHash = location.hash || "";
+    const isUsersView = currentHash === "#users" || location.pathname.endsWith("/users");
+    const isStoresView = currentHash === "#stores" || location.pathname.endsWith("/stores");
     const isOverview = !isUsersView && !isStoresView;
 
     const fetchStatistics = useCallback(async () => {
@@ -29,7 +29,16 @@ function AdminDashboardPage() {
 
         try {
             const data = await adminAPI.getDashboard();
-            setStats(data.data || data.statistics || { totalUsers: 0, totalStores: 0, totalRatings: 0 });
+            setStats(
+                data.data ||
+                data.statistics || {
+                    totalUsers: 0,
+                    totalStoreOwners: 0,
+                    totalStores: 0,
+                    totalRatings: 0,
+                    averageRating: 0,
+                }
+            );
         } catch (err) {
             console.error("Failed to load admin dashboard stats:", err);
             setErrorMessage(err.message || "Failed to load system statistics. Please try again.");
@@ -54,7 +63,7 @@ function AdminDashboardPage() {
                     title="Dashboard Overview"
                 >
                     <p>
-                        Welcome, <strong>{user?.name || "Administrator"}</strong>. Monitor real-time system metrics, platform volume, and role distributions.
+                        Welcome, <strong>{user?.name || "Administrator"}</strong>. Monitor platform health, user volume, store performance, and verified customer review metrics.
                     </p>
                 </PageHeader>
             )}
@@ -111,12 +120,12 @@ function AdminDashboardPage() {
                 </Card>
             </div>
 
-            {/* VIEW 1: Dashboard Overview Content */}
+            {/* VIEW 1: Dashboard Overview Content ONLY */}
             {isOverview && (
                 <div>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem", flexWrap: "wrap", gap: "0.75rem" }}>
                         <div>
-                            <h2 style={{ fontSize: "1.4rem", margin: 0, color: "var(--ink)" }}>Platform Statistics</h2>
+                            <h2 style={{ fontSize: "1.4rem", margin: 0, color: "var(--ink)" }}>Platform Overview & Statistics</h2>
                             <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.9rem", color: "var(--muted)" }}>
                                 Live database metrics aggregated from MySQL.
                             </p>
@@ -162,19 +171,19 @@ function AdminDashboardPage() {
                         <div
                             style={{
                                 display: "grid",
-                                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
                                 gap: "1.25rem",
                                 marginBottom: "2rem",
                             }}
                         >
                             {/* Card 1: Total Users */}
-                            <Card style={{ padding: "1.75rem 1.5rem", position: "relative", overflow: "hidden" }}>
+                            <Card style={{ padding: "1.6rem 1.4rem", position: "relative", overflow: "hidden" }}>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                                     <div>
-                                        <p style={{ margin: 0, fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", color: "var(--muted)", letterSpacing: "0.06em" }}>
+                                        <p style={{ margin: 0, fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", color: "var(--muted)", letterSpacing: "0.06em" }}>
                                             Total Users
                                         </p>
-                                        <h3 style={{ margin: "0.4rem 0 0 0", fontSize: "2.8rem", fontWeight: 800, color: "var(--ink)", lineHeight: 1 }}>
+                                        <h3 style={{ margin: "0.4rem 0 0 0", fontSize: "2.6rem", fontWeight: 800, color: "var(--ink)", lineHeight: 1 }}>
                                             {stats.totalUsers ?? 0}
                                         </h3>
                                     </div>
@@ -182,19 +191,19 @@ function AdminDashboardPage() {
                                         style={{
                                             display: "grid",
                                             placeItems: "center",
-                                            width: "44px",
-                                            height: "44px",
+                                            width: "42px",
+                                            height: "42px",
                                             borderRadius: "12px",
                                             background: "#e8f4f4",
                                             color: "var(--brand)",
-                                            fontSize: "1.4rem",
+                                            fontSize: "1.35rem",
                                         }}
                                         aria-hidden="true"
                                     >
                                         👥
                                     </span>
                                 </div>
-                                <div style={{ marginTop: "1.25rem", borderTop: "1px solid var(--line)", paddingTop: "0.75rem", fontSize: "0.82rem", color: "var(--muted)" }}>
+                                <div style={{ marginTop: "1.25rem", borderTop: "1px solid var(--line)", paddingTop: "0.75rem", fontSize: "0.8rem", color: "var(--muted)" }}>
                                     {stats.roles ? (
                                         <span>
                                             <strong>{stats.roles.users ?? 0}</strong> Customers •{" "}
@@ -207,14 +216,46 @@ function AdminDashboardPage() {
                                 </div>
                             </Card>
 
-                            {/* Card 2: Total Stores */}
-                            <Card style={{ padding: "1.75rem 1.5rem", position: "relative", overflow: "hidden" }}>
+                            {/* Card 2: Total Store Owners */}
+                            <Card style={{ padding: "1.6rem 1.4rem", position: "relative", overflow: "hidden" }}>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                                     <div>
-                                        <p style={{ margin: 0, fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", color: "var(--muted)", letterSpacing: "0.06em" }}>
+                                        <p style={{ margin: 0, fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", color: "var(--muted)", letterSpacing: "0.06em" }}>
+                                            Total Store Owners
+                                        </p>
+                                        <h3 style={{ margin: "0.4rem 0 0 0", fontSize: "2.6rem", fontWeight: 800, color: "var(--ink)", lineHeight: 1 }}>
+                                            {stats.totalStoreOwners ?? stats.roles?.storeOwners ?? 0}
+                                        </h3>
+                                    </div>
+                                    <span
+                                        style={{
+                                            display: "grid",
+                                            placeItems: "center",
+                                            width: "42px",
+                                            height: "42px",
+                                            borderRadius: "12px",
+                                            background: "#fef3c7",
+                                            color: "#92400e",
+                                            fontSize: "1.35rem",
+                                        }}
+                                        aria-hidden="true"
+                                    >
+                                        👤
+                                    </span>
+                                </div>
+                                <div style={{ marginTop: "1.25rem", borderTop: "1px solid var(--line)", paddingTop: "0.75rem", fontSize: "0.8rem", color: "var(--muted)" }}>
+                                    <span>Registered store management accounts</span>
+                                </div>
+                            </Card>
+
+                            {/* Card 3: Total Stores */}
+                            <Card style={{ padding: "1.6rem 1.4rem", position: "relative", overflow: "hidden" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                                    <div>
+                                        <p style={{ margin: 0, fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", color: "var(--muted)", letterSpacing: "0.06em" }}>
                                             Total Stores
                                         </p>
-                                        <h3 style={{ margin: "0.4rem 0 0 0", fontSize: "2.8rem", fontWeight: 800, color: "var(--ink)", lineHeight: 1 }}>
+                                        <h3 style={{ margin: "0.4rem 0 0 0", fontSize: "2.6rem", fontWeight: 800, color: "var(--ink)", lineHeight: 1 }}>
                                             {stats.totalStores ?? 0}
                                         </h3>
                                     </div>
@@ -222,31 +263,31 @@ function AdminDashboardPage() {
                                         style={{
                                             display: "grid",
                                             placeItems: "center",
-                                            width: "44px",
-                                            height: "44px",
+                                            width: "42px",
+                                            height: "42px",
                                             borderRadius: "12px",
-                                            background: "#fef3c7",
-                                            color: "#92400e",
-                                            fontSize: "1.4rem",
+                                            background: "#e0f2fe",
+                                            color: "#0369a1",
+                                            fontSize: "1.35rem",
                                         }}
                                         aria-hidden="true"
                                     >
                                         🏪
                                     </span>
                                 </div>
-                                <div style={{ marginTop: "1.25rem", borderTop: "1px solid var(--line)", paddingTop: "0.75rem", fontSize: "0.82rem", color: "var(--muted)" }}>
+                                <div style={{ marginTop: "1.25rem", borderTop: "1px solid var(--line)", paddingTop: "0.75rem", fontSize: "0.8rem", color: "var(--muted)" }}>
                                     <span>Active store records listed on platform</span>
                                 </div>
                             </Card>
 
-                            {/* Card 3: Total Ratings */}
-                            <Card style={{ padding: "1.75rem 1.5rem", position: "relative", overflow: "hidden" }}>
+                            {/* Card 4: Total Ratings */}
+                            <Card style={{ padding: "1.6rem 1.4rem", position: "relative", overflow: "hidden" }}>
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                                     <div>
-                                        <p style={{ margin: 0, fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", color: "var(--muted)", letterSpacing: "0.06em" }}>
+                                        <p style={{ margin: 0, fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", color: "var(--muted)", letterSpacing: "0.06em" }}>
                                             Total Ratings
                                         </p>
-                                        <h3 style={{ margin: "0.4rem 0 0 0", fontSize: "2.8rem", fontWeight: 800, color: "var(--ink)", lineHeight: 1 }}>
+                                        <h3 style={{ margin: "0.4rem 0 0 0", fontSize: "2.6rem", fontWeight: 800, color: "var(--ink)", lineHeight: 1 }}>
                                             {stats.totalRatings ?? 0}
                                         </h3>
                                     </div>
@@ -254,20 +295,52 @@ function AdminDashboardPage() {
                                         style={{
                                             display: "grid",
                                             placeItems: "center",
-                                            width: "44px",
-                                            height: "44px",
+                                            width: "42px",
+                                            height: "42px",
                                             borderRadius: "12px",
                                             background: "#fdf2e9",
                                             color: "#b45309",
-                                            fontSize: "1.4rem",
+                                            fontSize: "1.35rem",
                                         }}
                                         aria-hidden="true"
                                     >
                                         ⭐
                                     </span>
                                 </div>
-                                <div style={{ marginTop: "1.25rem", borderTop: "1px solid var(--line)", paddingTop: "0.75rem", fontSize: "0.82rem", color: "var(--muted)" }}>
-                                    <span>Verified customer store reviews submitted</span>
+                                <div style={{ marginTop: "1.25rem", borderTop: "1px solid var(--line)", paddingTop: "0.75rem", fontSize: "0.8rem", color: "var(--muted)" }}>
+                                    <span>Verified customer reviews submitted</span>
+                                </div>
+                            </Card>
+
+                            {/* Card 5: Average Rating */}
+                            <Card style={{ padding: "1.6rem 1.4rem", position: "relative", overflow: "hidden" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                                    <div>
+                                        <p style={{ margin: 0, fontSize: "0.82rem", fontWeight: 700, textTransform: "uppercase", color: "var(--muted)", letterSpacing: "0.06em" }}>
+                                            Average Rating
+                                        </p>
+                                        <h3 style={{ margin: "0.4rem 0 0 0", fontSize: "2.6rem", fontWeight: 800, color: "var(--ink)", lineHeight: 1 }}>
+                                            {stats.averageRating ? Number(stats.averageRating).toFixed(1) : "—"}
+                                        </h3>
+                                    </div>
+                                    <span
+                                        style={{
+                                            display: "grid",
+                                            placeItems: "center",
+                                            width: "42px",
+                                            height: "42px",
+                                            borderRadius: "12px",
+                                            background: "#ecfdf5",
+                                            color: "#047857",
+                                            fontSize: "1.35rem",
+                                        }}
+                                        aria-hidden="true"
+                                    >
+                                        📊
+                                    </span>
+                                </div>
+                                <div style={{ marginTop: "1.25rem", borderTop: "1px solid var(--line)", paddingTop: "0.75rem", fontSize: "0.8rem", color: "var(--muted)" }}>
+                                    <span>Overall platform satisfaction score (out of 5.0)</span>
                                 </div>
                             </Card>
                         </div>
@@ -275,10 +348,10 @@ function AdminDashboardPage() {
                 </div>
             )}
 
-            {/* VIEW 2: User Management View */}
+            {/* VIEW 2: User Management View ONLY */}
             {isUsersView && <AdminUsersView />}
 
-            {/* VIEW 3: Store Management View */}
+            {/* VIEW 3: Store Management View ONLY */}
             {isStoresView && <AdminStoresView />}
         </div>
     );

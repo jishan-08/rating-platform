@@ -81,17 +81,21 @@ async function getDashboardStatistics() {
              FROM users`
         ),
         pool.execute("SELECT COUNT(*) AS total_stores FROM stores"),
-        pool.execute("SELECT COUNT(*) AS total_ratings FROM ratings"),
+        pool.execute("SELECT COUNT(*) AS total_ratings, COALESCE(ROUND(AVG(rating), 2), 0) AS average_rating FROM ratings"),
     ]);
+
+    const storeOwnersCount = Number(userCounts[0]?.total_store_owners) || 0;
 
     return {
         totalUsers: Number(userCounts[0]?.total_users) || 0,
+        totalStoreOwners: storeOwnersCount,
         totalStores: Number(storeCounts[0]?.total_stores) || 0,
         totalRatings: Number(ratingCounts[0]?.total_ratings) || 0,
+        averageRating: Number(parseFloat(ratingCounts[0]?.average_rating || 0).toFixed(2)),
         roles: {
             admins: Number(userCounts[0]?.total_admins) || 0,
             users: Number(userCounts[0]?.total_normal_users) || 0,
-            storeOwners: Number(userCounts[0]?.total_store_owners) || 0,
+            storeOwners: storeOwnersCount,
         },
     };
 }

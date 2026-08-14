@@ -32,6 +32,7 @@ function App() {
                     }
                 >
                     <Route index element={<DashboardShellPage />} />
+                    <Route path="*" element={<DashboardShellPage />} />
                 </Route>
 
                 {/* Protected administrator dashboard workspace routes */}
@@ -44,6 +45,10 @@ function App() {
                     }
                 >
                     <Route index element={<AdminDashboardPage />} />
+                    <Route path="dashboard" element={<AdminDashboardPage />} />
+                    <Route path="users" element={<AdminDashboardPage />} />
+                    <Route path="stores" element={<AdminDashboardPage />} />
+                    <Route path="*" element={<AdminDashboardPage />} />
                 </Route>
             </Routes>
         </AuthProvider>

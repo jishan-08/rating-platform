@@ -40,7 +40,16 @@ function Sidebar({ open, onNavigate }) {
 
     const isItemActive = (itemTo) => {
         if (itemTo === "/admin") {
-            return location.pathname === "/admin" && (!location.hash || location.hash === "#dashboard");
+            return (
+                (location.pathname === "/admin" || location.pathname === "/admin/dashboard") &&
+                (!location.hash || location.hash === "#dashboard")
+            );
+        }
+        if (itemTo === "/admin#users") {
+            return location.hash === "#users" || location.pathname === "/admin/users";
+        }
+        if (itemTo === "/admin#stores") {
+            return location.hash === "#stores" || location.pathname === "/admin/stores";
         }
         if (itemTo === "/dashboard") {
             if (user?.role === "STORE_OWNER") {
