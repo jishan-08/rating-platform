@@ -13,6 +13,7 @@ import { useAuth } from "../context/useAuth";
 import { storeAPI } from "../services/api";
 
 const STAR_DESCRIPTIONS = {
+    0: "Select a rating (1–5 stars)",
     1: "1 star — Poor",
     2: "2 stars — Fair",
     3: "3 stars — Good",
@@ -90,7 +91,8 @@ function DashboardShellPage() {
 
     const handleOpenRatingForm = (store) => {
         setActiveRatingStoreId(store.id);
-        setSelectedRatingValue(store.myRating || 5);
+        const currentRating = store.myRating !== null && store.myRating !== undefined ? Number(store.myRating) : 0;
+        setSelectedRatingValue(currentRating);
         setRatingFeedback((prev) => ({ ...prev, [store.id]: null }));
     };
 
@@ -98,6 +100,7 @@ function DashboardShellPage() {
         if (activeRatingStoreId === storeId) {
             setActiveRatingStoreId(null);
             setSelectedRatingValue(0);
+            setRatingFeedback((prev) => ({ ...prev, [storeId]: null }));
         }
     };
 
@@ -488,14 +491,25 @@ function DashboardShellPage() {
                                                             {store.myRating !== null ? "Update your rating:" : "Rate this store:"}
                                                         </p>
 
-                                                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem", flexWrap: "wrap" }}>
                                                             <RatingStars
                                                                 value={selectedRatingValue}
-                                                                onChange={(val) => setSelectedRatingValue(val)}
+                                                                onChange={(val) => {
+                                                                    setSelectedRatingValue(val);
+                                                                    setRatingFeedback((prev) => ({ ...prev, [store.id]: null }));
+                                                                }}
+                                                                interactive={true}
                                                                 size="lg"
+                                                                disabled={isSavingRating}
                                                             />
-                                                            <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--brand-dark)" }}>
-                                                                {STAR_DESCRIPTIONS[selectedRatingValue] || `${selectedRatingValue} stars`}
+                                                            <span
+                                                                style={{
+                                                                    fontSize: "0.88rem",
+                                                                    fontWeight: 600,
+                                                                    color: selectedRatingValue > 0 ? "var(--brand-dark)" : "var(--muted)",
+                                                                }}
+                                                            >
+                                                                {STAR_DESCRIPTIONS[selectedRatingValue] || (selectedRatingValue > 0 ? `${selectedRatingValue} stars` : "Click a star to rate")}
                                                             </span>
                                                         </div>
 

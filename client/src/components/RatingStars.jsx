@@ -1,11 +1,11 @@
 import { useState } from "react";
 
 const STAR_LABELS = {
-    1: "1 star - Poor",
-    2: "2 stars - Fair",
-    3: "3 stars - Good",
-    4: "4 stars - Very Good",
-    5: "5 stars - Excellent",
+    1: "1 star — Poor",
+    2: "2 stars — Fair",
+    3: "3 stars — Good",
+    4: "4 stars — Very Good",
+    5: "5 stars — Excellent",
 };
 
 /**
@@ -13,9 +13,10 @@ const STAR_LABELS = {
  * Renders an accessible 1-5 star rating display or interactive rating selector.
  *
  * @param {Object} props
- * @param {number} props.value - Currently selected or display rating (1 to 5)
+ * @param {number} props.value - Currently selected rating (0 to 5)
  * @param {function} [props.onChange] - Callback fired when a star is selected
- * @param {boolean} [props.interactive=false] - Whether user can click / hover stars to change rating
+ * @param {boolean} [props.interactive] - Force interactive mode
+ * @param {boolean} [props.readOnly=false] - Force static display mode
  * @param {string} [props.size="md"] - Size variant: "sm", "md", "lg"
  * @param {boolean} [props.disabled=false] - Disable interactions
  * @param {string} [props.ariaLabel="Rating"] - Accessible label for screen readers
@@ -23,14 +24,16 @@ const STAR_LABELS = {
 function RatingStars({
     value = 0,
     onChange,
-    interactive = false,
+    interactive,
+    readOnly = false,
     size = "md",
     disabled = false,
     ariaLabel = "Rating",
 }) {
     const [hoverValue, setHoverValue] = useState(0);
 
-    const activeRating = interactive && hoverValue > 0 ? hoverValue : (value || 0);
+    const isInteractive = !readOnly && (interactive || typeof onChange === "function");
+    const activeRating = isInteractive && hoverValue > 0 ? hoverValue : (Number(value) || 0);
 
     const sizeStyles = {
         sm: { fontSize: "1rem", gap: "2px" },
@@ -40,7 +43,8 @@ function RatingStars({
 
     const currentStyle = sizeStyles[size] || sizeStyles.md;
 
-    if (!interactive) {
+    // Non-interactive display mode
+    if (!isInteractive) {
         return (
             <div
                 className="rating-stars"
@@ -55,7 +59,7 @@ function RatingStars({
                 title={`${value || 0} / 5`}
             >
                 {[1, 2, 3, 4, 5].map((starIndex) => {
-                    const isFilled = starIndex <= Math.round(value);
+                    const isFilled = starIndex <= Math.round(Number(value) || 0);
                     return (
                         <span
                             key={starIndex}
@@ -74,6 +78,7 @@ function RatingStars({
         );
     }
 
+    // Interactive selector mode
     return (
         <div
             className="rating-stars rating-stars--interactive"
@@ -95,12 +100,13 @@ function RatingStars({
                         key={starIndex}
                         type="button"
                         role="radio"
-                        aria-checked={value === starIndex}
+                        aria-checked={Number(value) === starIndex}
                         aria-label={label}
                         disabled={disabled}
                         onClick={() => {
                             if (!disabled && onChange) {
                                 onChange(starIndex);
+                                setHoverValue(0);
                             }
                         }}
                         onMouseEnter={() => {
@@ -124,7 +130,7 @@ function RatingStars({
                             lineHeight: 1,
                             color: isSelected ? "#e8a33a" : "#d1d5db",
                             transition: "transform 0.12s ease, color 0.12s ease",
-                            transform: hoverValue === starIndex ? "scale(1.18)" : "scale(1)",
+                            transform: hoverValue === starIndex ? "scale(1.22)" : "scale(1)",
                             display: "inline-flex",
                             alignItems: "center",
                             justifyContent: "center",
