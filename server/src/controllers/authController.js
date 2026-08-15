@@ -32,7 +32,7 @@ async function register(req, res) {
             });
         }
 
-        console.error("User registration failed");
+        console.error("User registration failed:", error);
 
         return res.status(500).json({
             success: false,

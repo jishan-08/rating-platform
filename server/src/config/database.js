@@ -16,6 +16,11 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME || "rating_platform",
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
+
+    ssl: {
+        rejectUnauthorized: false
+    },
+
     waitForConnections: true,
     connectionLimit: getPositiveInteger(process.env.DB_CONNECTION_LIMIT, 10),
     queueLimit: 0,

@@ -173,16 +173,16 @@ function DashboardShellPage() {
                         isOwnerDashboard
                             ? `Welcome, ${user?.name || "Store Owner"}!`
                             : isOwnerMyStore
-                            ? "My Store"
-                            : "Store Ratings"
+                                ? "My Store"
+                                : "Store Ratings"
                     }
                 >
                     <p>
                         {isOwnerDashboard
                             ? "Monitor your store performance, review distribution metrics, and oversee customer ratings."
                             : isOwnerMyStore
-                            ? "Official registry and contact details for your store location."
-                            : "Verified customer reviews and feedback for your store."}
+                                ? "Official registry and contact details for your store location."
+                                : "Verified customer reviews and feedback for your store."}
                     </p>
                 </PageHeader>
 

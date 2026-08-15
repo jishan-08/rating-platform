@@ -38,7 +38,7 @@ app.get("/api/health/db", async (req, res) => {
             message: "Database is reachable",
         });
     } catch (error) {
-        console.error("Database health check failed");
+        console.error("Database health check failed:", error);
 
         return res.status(503).json({
             success: false,
