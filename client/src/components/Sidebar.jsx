@@ -41,7 +41,7 @@ function Sidebar({ open, onNavigate }) {
     const isItemActive = (itemTo) => {
         if (itemTo === "/admin") {
             return (
-                (location.pathname === "/admin" || location.pathname === "/admin/dashboard") &&
+                (location.pathname === "/admin" || location.pathname === "/admin/dashboard" || location.pathname === "/admin/") &&
                 (!location.hash || location.hash === "#dashboard")
             );
         }
@@ -53,9 +53,29 @@ function Sidebar({ open, onNavigate }) {
         }
         if (itemTo === "/dashboard") {
             if (user?.role === "STORE_OWNER") {
-                return location.pathname === "/dashboard" && (!location.hash || location.hash === "#dashboard");
+                return (
+                    (location.pathname === "/dashboard" || location.pathname === "/dashboard/") &&
+                    (!location.hash || location.hash === "#dashboard" || location.hash === "#overview")
+                );
             }
-            return location.pathname === "/dashboard" && (!location.hash || location.hash === "#overview" || location.hash === "#browse");
+            return (
+                (location.pathname === "/dashboard" || location.pathname === "/dashboard/") &&
+                (!location.hash || location.hash === "#overview" || location.hash === "#dashboard")
+            );
+        }
+        if (itemTo === "/dashboard#browse") {
+            return (
+                location.hash === "#browse" ||
+                location.hash === "#browse-stores" ||
+                location.pathname === "/dashboard/browse-stores" ||
+                location.pathname === "/dashboard/browse"
+            );
+        }
+        if (itemTo === "/dashboard#my-ratings") {
+            return (
+                location.hash === "#my-ratings" ||
+                location.pathname === "/dashboard/my-ratings"
+            );
         }
         if (itemTo.includes("#")) {
             const [itemPath, itemHash] = itemTo.split("#");

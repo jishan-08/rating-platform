@@ -32,8 +32,16 @@ function DashboardShellPage() {
     const isOwnerRatings = location.hash === "#ratings";
     const isOwnerDashboard = !isOwnerMyStore && !isOwnerRatings;
 
-    // Customer subview flag
-    const isMyRatings = location.hash === "#my-ratings";
+    // Customer subview flags
+    const isBrowseStores =
+        location.hash === "#browse" ||
+        location.hash === "#browse-stores" ||
+        location.pathname.endsWith("/browse-stores") ||
+        location.pathname.endsWith("/browse");
+    const isMyRatings =
+        location.hash === "#my-ratings" ||
+        location.pathname.endsWith("/my-ratings");
+    const isOverview = !isBrowseStores && !isMyRatings;
 
     // Customer store browsing state
     const [stores, setStores] = useState([]);
@@ -72,16 +80,16 @@ function DashboardShellPage() {
         }
     }, []);
 
-    // Debounce search inputs by 300ms for smooth live search (customer only)
+    // Debounce search inputs by 300ms for smooth live search (customer only when browsing)
     useEffect(() => {
-        if (!isStoreOwner && !isMyRatings) {
+        if (!isStoreOwner && isBrowseStores) {
             const timer = setTimeout(() => {
                 fetchStores(searchName, searchAddress, 1);
             }, 300);
 
             return () => clearTimeout(timer);
         }
-    }, [searchName, searchAddress, fetchStores, isMyRatings, isStoreOwner]);
+    }, [searchName, searchAddress, fetchStores, isBrowseStores, isStoreOwner]);
 
     const handleClearFilters = () => {
         setSearchName("");
@@ -226,105 +234,228 @@ function DashboardShellPage() {
     }
 
     // =========================================================================
-    // RENDER: CUSTOMER / USER EXPERIENCE (PRESERVED)
+    // RENDER: CUSTOMER / USER EXPERIENCE (PRESERVED & SEPARATED)
     // =========================================================================
     return (
         <div className="dashboard-page">
-            <PageHeader
-                eyebrow={isMyRatings ? "User Feedback" : "Store Directory"}
-                title={`Welcome, ${user?.name || "Customer"}!`}
-            >
-                <p>
-                    {isMyRatings
-                        ? "Review and manage the store ratings and feedback you have submitted."
-                        : "Browse registered stores, view overall community ratings, and share your feedback."}
-                </p>
-            </PageHeader>
+            {/* OVERVIEW VIEW */}
+            {isOverview && (
+                <div className="user-overview-view">
+                    <PageHeader
+                        eyebrow="User Workspace"
+                        title={`Welcome, ${user?.name || "Customer"}!`}
+                    >
+                        <p>
+                            Manage your account and keep track of your activity on Rating Platform.
+                        </p>
+                    </PageHeader>
 
-            {/* Account Overview Bar */}
-            <div style={{ marginBottom: "1.5rem" }}>
-                <Card style={{ padding: "1.1rem 1.4rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.75rem" }}>
-                        <div>
-                            <span style={{ fontSize: "0.8rem", color: "var(--muted)", textTransform: "uppercase", fontWeight: 700 }}>
-                                Signed In As
-                            </span>
-                            <p style={{ margin: "0.15rem 0 0 0", fontWeight: 700, color: "var(--ink)", fontSize: "1.05rem" }}>
-                                {user?.name} <span style={{ fontWeight: 500, fontSize: "0.9rem", color: "var(--muted)" }}>({user?.email})</span>
-                            </p>
-                        </div>
+                    {/* Single Professional Account Summary Section */}
+                    <div style={{ maxWidth: "640px", margin: "0 auto" }}>
+                        <Card style={{ padding: "2.25rem 2rem" }}>
+                            {/* Avatar & Profile Identity */}
+                            <div style={{ textAlign: "center", marginBottom: "1.75rem" }}>
+                                <div
+                                    style={{
+                                        width: "68px",
+                                        height: "68px",
+                                        borderRadius: "50%",
+                                        background: "linear-gradient(135deg, #16646b 0%, #0f4c52 100%)",
+                                        color: "#ffffff",
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontSize: "1.75rem",
+                                        fontWeight: 750,
+                                        marginBottom: "0.85rem",
+                                        boxShadow: "0 6px 16px rgba(22, 100, 107, 0.22)",
+                                    }}
+                                    aria-hidden="true"
+                                >
+                                    {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
+                                </div>
+                                <h2 style={{ fontSize: "1.45rem", margin: "0 0 0.35rem 0", color: "var(--ink)", fontWeight: 750 }}>
+                                    {user?.name || "User Account"}
+                                </h2>
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", marginTop: "0.4rem" }}>
+                                    <span
+                                        style={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            padding: "0.25rem 0.75rem",
+                                            borderRadius: "999px",
+                                            background: "#16646b",
+                                            color: "#ffffff",
+                                            fontWeight: 700,
+                                            fontSize: "0.8rem",
+                                            letterSpacing: "0.03em",
+                                        }}
+                                    >
+                                        {user?.role || "USER"}
+                                    </span>
+                                    <span
+                                        style={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            gap: "0.35rem",
+                                            padding: "0.25rem 0.75rem",
+                                            borderRadius: "999px",
+                                            background: "#ecfdf5",
+                                            color: "#065f46",
+                                            border: "1px solid #a7f3d0",
+                                            fontWeight: 700,
+                                            fontSize: "0.8rem",
+                                        }}
+                                    >
+                                        <span style={{ color: "#10b981", fontSize: "0.75rem" }}>●</span> Active
+                                    </span>
+                                </div>
+                            </div>
 
-                        <span
-                            style={{
-                                padding: "0.35rem 0.8rem",
-                                borderRadius: "999px",
-                                background: "#16646b",
-                                color: "#ffffff",
-                                fontWeight: 700,
-                                fontSize: "0.82rem",
-                            }}
-                        >
-                            Role: {user?.role}
-                        </span>
+                            {/* Details List */}
+                            <div
+                                style={{
+                                    border: "1px solid var(--line)",
+                                    borderRadius: "10px",
+                                    overflow: "hidden",
+                                    background: "#fcfdfe",
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        padding: "0.95rem 1.25rem",
+                                        borderBottom: "1px solid var(--line)",
+                                        flexWrap: "wrap",
+                                        gap: "0.5rem",
+                                    }}
+                                >
+                                    <span style={{ fontSize: "0.85rem", color: "var(--muted)", fontWeight: 600 }}>
+                                        Email
+                                    </span>
+                                    <span style={{ fontSize: "0.92rem", color: "var(--ink)", fontWeight: 600 }}>
+                                        {user?.email || "—"}
+                                    </span>
+                                </div>
+
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        padding: "0.95rem 1.25rem",
+                                        borderBottom: "1px solid var(--line)",
+                                        flexWrap: "wrap",
+                                        gap: "0.5rem",
+                                    }}
+                                >
+                                    <span style={{ fontSize: "0.85rem", color: "var(--muted)", fontWeight: 600 }}>
+                                        Role
+                                    </span>
+                                    <span style={{ fontSize: "0.92rem", color: "var(--ink)", fontWeight: 600 }}>
+                                        {user?.role || "USER"}
+                                    </span>
+                                </div>
+
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        padding: "0.95rem 1.25rem",
+                                        borderBottom: user?.address || (user?.created_at || user?.createdAt) ? "1px solid var(--line)" : "none",
+                                        flexWrap: "wrap",
+                                        gap: "0.5rem",
+                                    }}
+                                >
+                                    <span style={{ fontSize: "0.85rem", color: "var(--muted)", fontWeight: 600 }}>
+                                        Account Status
+                                    </span>
+                                    <span style={{ fontSize: "0.92rem", color: "#065f46", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                                        <span style={{ color: "#10b981" }}>●</span> Active
+                                    </span>
+                                </div>
+
+                                {user?.address && (
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                            padding: "0.95rem 1.25rem",
+                                            borderBottom: (user?.created_at || user?.createdAt) ? "1px solid var(--line)" : "none",
+                                            flexWrap: "wrap",
+                                            gap: "0.5rem",
+                                        }}
+                                    >
+                                        <span style={{ fontSize: "0.85rem", color: "var(--muted)", fontWeight: 600 }}>
+                                            Address
+                                        </span>
+                                        <span style={{ fontSize: "0.92rem", color: "var(--ink)", fontWeight: 500 }}>
+                                            {user.address}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {(user?.created_at || user?.createdAt) && (
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                            padding: "0.95rem 1.25rem",
+                                            flexWrap: "wrap",
+                                            gap: "0.5rem",
+                                        }}
+                                    >
+                                        <span style={{ fontSize: "0.85rem", color: "var(--muted)", fontWeight: 600 }}>
+                                            Member Since
+                                        </span>
+                                        <span style={{ fontSize: "0.92rem", color: "var(--ink)", fontWeight: 500 }}>
+                                            {new Date(user.created_at || user.createdAt).toLocaleDateString("en-US", {
+                                                year: "numeric",
+                                                month: "short",
+                                                day: "numeric",
+                                            })}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Card Footer */}
+                            <div style={{ marginTop: "1.5rem", textAlign: "center" }}>
+                                <span
+                                    style={{
+                                        fontSize: "0.82rem",
+                                        color: "var(--brand-dark)",
+                                        fontWeight: 650,
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "0.35rem",
+                                    }}
+                                >
+                                    <span aria-hidden="true">🛡️</span> Verified Platform Member
+                                </span>
+                            </div>
+                        </Card>
                     </div>
-                </Card>
-            </div>
-
-            {/* Tab Navigation for Normal Users */}
-            {user?.role === "USER" && (
-                <div
-                    style={{
-                        display: "flex",
-                        gap: "0.5rem",
-                        marginBottom: "1.75rem",
-                        borderBottom: "2px solid var(--line)",
-                        paddingBottom: "0.25rem",
-                    }}
-                >
-                    <button
-                        type="button"
-                        onClick={() => navigate("/dashboard#browse")}
-                        style={{
-                            padding: "0.6rem 1.2rem",
-                            border: "none",
-                            background: "transparent",
-                            fontWeight: 700,
-                            fontSize: "0.95rem",
-                            color: !isMyRatings ? "var(--brand)" : "var(--muted)",
-                            borderBottom: !isMyRatings ? "3px solid var(--brand)" : "3px solid transparent",
-                            marginBottom: "-4px",
-                            cursor: "pointer",
-                            transition: "all 0.15s ease",
-                        }}
-                    >
-                        Browse Stores
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => navigate("/dashboard#my-ratings")}
-                        style={{
-                            padding: "0.6rem 1.2rem",
-                            border: "none",
-                            background: "transparent",
-                            fontWeight: 700,
-                            fontSize: "0.95rem",
-                            color: isMyRatings ? "var(--brand)" : "var(--muted)",
-                            borderBottom: isMyRatings ? "3px solid var(--brand)" : "3px solid transparent",
-                            marginBottom: "-4px",
-                            cursor: "pointer",
-                            transition: "all 0.15s ease",
-                        }}
-                    >
-                        My Ratings
-                    </button>
                 </div>
             )}
 
-            {/* View Switching: My Ratings vs Browse Stores */}
-            {isMyRatings ? (
-                <MyRatingsView onNavigateToBrowse={() => navigate("/dashboard#browse")} />
-            ) : (
-                <>
+            {/* BROWSE STORES VIEW */}
+            {isBrowseStores && (
+                <div className="user-browse-view">
+                    <PageHeader
+                        eyebrow="Store Directory"
+                        title="Browse Stores"
+                    >
+                        <p>
+                            Browse registered stores, view overall community ratings, and share your feedback.
+                        </p>
+                    </PageHeader>
+
                     {/* Search and Filters Section */}
                     <section style={{ marginBottom: "2rem" }} aria-label="Store search and filters">
                         <Card>
@@ -602,7 +733,23 @@ function DashboardShellPage() {
                             </div>
                         )}
                     </section>
-                </>
+                </div>
+            )}
+
+            {/* MY RATINGS VIEW */}
+            {isMyRatings && (
+                <div className="user-ratings-view">
+                    <PageHeader
+                        eyebrow="User Feedback"
+                        title="My Ratings"
+                    >
+                        <p>
+                            Review and manage the store ratings and feedback you have submitted.
+                        </p>
+                    </PageHeader>
+
+                    <MyRatingsView onNavigateToBrowse={() => navigate("/dashboard#browse")} />
+                </div>
             )}
         </div>
     );
