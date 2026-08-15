@@ -42,8 +42,8 @@ function RegisterPage() {
 
         // Client-side validations matching database constraints
         const clientErrors = [];
-        if (trimmedName.length < 2 || trimmedName.length > 60) {
-            clientErrors.push("Full name must be between 2 and 60 characters.");
+        if (!trimmedName || trimmedName.length > 60) {
+            clientErrors.push("Full name is required and cannot exceed 60 characters.");
         }
         if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
             clientErrors.push("A valid email address is required.");
@@ -117,7 +117,7 @@ function RegisterPage() {
                         label="Full name"
                         autoComplete="name"
                         required
-                        hint="2–60 characters"
+                        hint="Maximum 60 characters"
                         placeholder="Full name (e.g. John Doe)"
                         value={formData.name}
                         onChange={handleChange}
